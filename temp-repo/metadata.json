@@ -1,0 +1,8 @@
+{
+  "name": "改单助手",
+  "description": "Logistics query and rules verification system, custom order routing, and calculation tools",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
