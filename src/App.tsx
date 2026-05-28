@@ -2176,7 +2176,7 @@ export default function App() {
           <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3 text-zinc-900">
               <div className="bg-zinc-900 p-2 rounded-xl shadow-sm">
-                <Database className="w-5 h-5 text-white" />
+                <Rocket className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-bold tracking-tight text-zinc-900">
@@ -2518,7 +2518,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setInputSku("")}
-                          className="absolute right-8 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                          className="absolute right-8 top-0 bottom-0 flex items-center justify-center text-zinc-400 hover:text-zinc-600 transition-colors"
                         >
                           <XCircle className="w-4 h-4" />
                         </button>
@@ -2547,7 +2547,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setInputCountry("")}
-                          className="absolute right-8 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                          className="absolute right-8 top-0 bottom-0 flex items-center justify-center text-zinc-400 hover:text-zinc-600 transition-colors"
                         >
                           <XCircle className="w-4 h-4" />
                         </button>
@@ -3112,8 +3112,20 @@ export default function App() {
                   <Calculator size={24} />
                 </div>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-black text-zinc-900 tracking-tight">
+                  <h2 className="text-lg sm:text-xl font-black text-zinc-900 tracking-tight flex items-center gap-2">
                     装载体积与合规探测引擎
+                    <div className="group relative flex items-center">
+                      <Info className="w-4 h-4 text-zinc-400 hover:text-indigo-500 cursor-help transition-colors" />
+                      <div className="absolute left-6 top-1/2 -translate-y-1/2 w-72 bg-zinc-800 text-white text-xs p-3.5 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 shadow-xl border border-zinc-700 pointer-events-none">
+                        <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-8 border-r-zinc-800"></div>
+                        <p className="font-bold text-zinc-100 mb-1.5 flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5 text-amber-400" /> 智能寻优排序逻辑：</p>
+                        <ul className="space-y-1 text-zinc-300">
+                          <li>1. 优先推荐 <strong>无超规附加费</strong> 的渠道。</li>
+                          <li>2. 其次选择 <strong>超规费用总额较低</strong> 的渠道。</li>
+                          <li>3. 费用一致时，按 <strong>计费重较小</strong> 择优推荐。</li>
+                        </ul>
+                      </div>
+                    </div>
                   </h2>
                   <p className="text-xs sm:text-sm text-zinc-500 mt-1 font-medium">
                     应用高精度浮点核算，严格校验渠道标准
@@ -3504,10 +3516,24 @@ export default function App() {
                               </p>
                             );
 
-                          // Sort by charge weight as a proxy for cost (lower is usually better)
-                          const sorted = validCarriers.sort(
-                            (a, b) => a.data.chargeWeight - b.data.chargeWeight,
-                          );
+                          // 按照用户需求：先按是否含超规费用排序，再按超规费用高低排序，最后按计费重排序
+                          const sorted = validCarriers.sort((a, b) => {
+                            const aHasSurcharge = a.data.surcharges && a.data.surcharges.length > 0;
+                            const bHasSurcharge = b.data.surcharges && b.data.surcharges.length > 0;
+                            
+                            if (aHasSurcharge !== bHasSurcharge) {
+                              return aHasSurcharge ? 1 : -1;
+                            }
+                            
+                            const aFee = aHasSurcharge ? a.data.surcharges.reduce((sum: number, s: any) => sum + s.fee, 0) : 0;
+                            const bFee = bHasSurcharge ? b.data.surcharges.reduce((sum: number, s: any) => sum + s.fee, 0) : 0;
+                            
+                            if (aFee !== bFee) {
+                              return aFee - bFee;
+                            }
+                            
+                            return a.data.chargeWeight - b.data.chargeWeight;
+                          });
                           return (
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">

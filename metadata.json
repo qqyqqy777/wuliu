@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "改单助手",
+  "description": "渠道自动寻优 / 产品资料入库 / 订单库龄路由",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
