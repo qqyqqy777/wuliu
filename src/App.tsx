@@ -29,6 +29,7 @@ import {
   Globe,
   TrendingDown,
   ShieldAlert,
+  Copy,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -2199,7 +2200,7 @@ export default function App() {
                   onClick={() => setActiveTab("calc")}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === "calc" ? "bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200" : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/50"}`}
                 >
-                  <Calculator className="w-4 h-4" /> 包装沙盘
+                  <Calculator className="w-4 h-4" /> 超规核算
                 </button>
               </div>
               <div className="w-px h-6 bg-zinc-300 mx-2"></div>
@@ -2511,13 +2512,13 @@ export default function App() {
                         value={inputSku}
                         onChange={(e) => setInputSku(e.target.value)}
                         placeholder="如: EB-B-1-SG4978"
-                        className="w-full px-4 py-3 bg-zinc-50/50 border border-zinc-200 rounded-xl focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-zinc-900 font-medium font-mono text-sm shadow-sm"
+                        className="w-full pl-4 pr-14 py-3 bg-zinc-50/50 border border-zinc-200 rounded-xl focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-zinc-900 font-medium font-mono text-sm shadow-sm"
                       />
                       {inputSku && (
                         <button
                           type="button"
                           onClick={() => setInputSku("")}
-                          className="absolute right-3 top-1/2 -tranzinc-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                          className="absolute right-8 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
                         >
                           <XCircle className="w-4 h-4" />
                         </button>
@@ -2540,13 +2541,13 @@ export default function App() {
                         value={inputCountry}
                         onChange={(e) => setInputCountry(e.target.value)}
                         placeholder="如: 爱尔兰"
-                        className="w-full px-4 py-3 bg-zinc-50/50 border border-zinc-200 rounded-xl focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-zinc-900 font-medium text-sm shadow-sm"
+                        className="w-full pl-4 pr-14 py-3 bg-zinc-50/50 border border-zinc-200 rounded-xl focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-zinc-900 font-medium text-sm shadow-sm"
                       />
                       {inputCountry && (
                         <button
                           type="button"
                           onClick={() => setInputCountry("")}
-                          className="absolute right-3 top-1/2 -tranzinc-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                          className="absolute right-8 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
                         >
                           <XCircle className="w-4 h-4" />
                         </button>
@@ -2680,9 +2681,14 @@ export default function App() {
                                         </span>
                                       )}
                                       {result.bestOption.stock.suggestedSku && (
-                                        <span className="text-zinc-700 bg-white border border-zinc-200 px-2 py-0.5 rounded shadow-sm text-xs font-mono">
+                                        <button 
+                                          onClick={() => navigator.clipboard.writeText(result.bestOption.stock.suggestedSku!)}
+                                          title="点击复制SKU"
+                                          className="flex items-center gap-1 group text-zinc-700 bg-white border border-zinc-200 hover:border-indigo-400 hover:text-indigo-700 px-2 py-0.5 rounded shadow-sm text-xs font-mono transition-all active:scale-95"
+                                        >
                                           发货SKU: {result.bestOption.stock.suggestedSku}
-                                        </span>
+                                          <Copy className="w-3 h-3 text-zinc-400 group-hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </button>
                                       )}
                                       {result.bestOption.stock.total === 0 && (
                                         <span className="text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded shadow-sm text-xs">
@@ -2877,7 +2883,7 @@ export default function App() {
                           >
                             <span className="relative z-10 flex items-center gap-2">
                               <Calculator className="w-4 h-4" />{" "}
-                              智能带入包装沙盘{" "}
+                              智能带入超规核算{" "}
                               <ArrowRight className="w-4 h-4 group-hover:tranzinc-x-1 transition-transform" />
                             </span>
                           </button>
@@ -2966,9 +2972,14 @@ export default function App() {
                                               </span>
                                             )}
                                             {opt.stock.suggestedSku && (
-                                              <span className="text-[10px] text-zinc-700 font-bold border border-zinc-200 px-1.5 py-0.5 rounded-md bg-white shadow-sm leading-none font-mono">
+                                              <button
+                                                onClick={() => navigator.clipboard.writeText(opt.stock.suggestedSku!)}
+                                                title="点击复制SKU"
+                                                className="flex items-center gap-1 group text-[10px] text-zinc-700 font-bold border border-zinc-200 hover:border-indigo-400 hover:text-indigo-700 px-1.5 py-0.5 rounded-md bg-white shadow-sm leading-none font-mono transition-all active:scale-95"
+                                              >
                                                 发货SKU: {opt.stock.suggestedSku}
-                                              </span>
+                                                <Copy className="w-[10px] h-[10px] text-zinc-400 group-hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                              </button>
                                             )}
                                             {opt.stock.eb === 0 &&
                                               opt.stock.am === 0 &&
