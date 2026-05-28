@@ -203,6 +203,25 @@ const getEquivalentSkus = (sku: string) => {
   ).filter(Boolean);
 };
 
+const isSameWarehouseName = (sourceWh: string, targetWh: string) => {
+  const source = String(sourceWh || "").trim();
+  const target = String(targetWh || "").trim();
+  if (!source || !target) return false;
+
+  const cleanSource = source.replace(/\s+/g, "");
+  const cleanTarget = target.replace(/\s+/g, "");
+  if (cleanSource === cleanTarget) return true;
+
+  const sourceHasLX = cleanSource.toUpperCase().includes("LX") || cleanSource.includes("乐线");
+  const targetHasLX = cleanTarget.toUpperCase().includes("LX") || cleanTarget.includes("乐线");
+
+  if (sourceHasLX !== targetHasLX) {
+    return false;
+  }
+
+  return cleanSource.includes(cleanTarget) || cleanTarget.includes(cleanSource);
+};
+
 const isGermanyDestination = (country: string) => {
   const normalized = (country || "").trim().toUpperCase();
   return ["DE", "DEU", "GERMANY", "GERMAN"].includes(normalized) ||
@@ -462,15 +481,6 @@ const OrdersOptimizer: React.FC<OrdersOptimizerProps> = ({
           let sheet3Updated = 0;
           let costCalcCount = 0;
 
-          const isSameWarehouse = (sourceWh: string, targetWh: string) => {
-            const source = String(sourceWh || "").trim();
-            const target = String(targetWh || "").trim();
-            return (
-              Boolean(source && target) &&
-              (source.includes(target) || target.includes(source))
-            );
-          };
-
           const getCombinedInventory = (tSku: string) => {
             const eqSkus = getEquivalentSkus(tSku);
             const whMap: Record<
@@ -500,7 +510,7 @@ const OrdersOptimizer: React.FC<OrdersOptimizerProps> = ({
 
             eqSkus.forEach((s) => {
               skuStockMap[s]?.forEach((item) => {
-                if (item.avail > 0 && isSameWarehouse(item.wh, targetWh)) {
+                if (item.avail > 0 && isSameWarehouseName(item.wh, targetWh)) {
                   stockBySku[s] = (stockBySku[s] || 0) + item.avail;
                 }
               });
@@ -693,7 +703,7 @@ const OrdersOptimizer: React.FC<OrdersOptimizerProps> = ({
 
                 const combinedStock = getCombinedInventory(sku);
                 const hasStock = combinedStock.some(
-                  (s) => s.avail > 0 && isSameWarehouse(s.wh, bestPriceWH),
+                  (s) => s.avail > 0 && isSameWarehouseName(s.wh, bestPriceWH),
                 );
                 row[stockStatusCol] = hasStock ? "现货满足" : "需调拨/无货";
                 row[suggestedSkuCol] = hasStock
@@ -1655,7 +1665,7 @@ export default function App() {
         if (inventoryMap[s]) {
           let sQty = 0;
           for (const whKey in inventoryMap[s]) {
-            if (targetWh.includes(whKey) || whKey.includes(targetWh)) {
+            if (isSameWarehouseName(targetWh, whKey)) {
               sQty += inventoryMap[s][whKey];
               found = true;
             }
@@ -1809,7 +1819,7 @@ export default function App() {
         let matchedTP = null;
         if (ageWH && thirdPartyWHs.some((tw) => ageWH.includes(tw))) {
           matchedTP = thirdPartyOptions.find((o) =>
-            o.warehouse.includes(ageWH),
+            isSameWarehouseName(o.warehouse, ageWH)
           );
         }
 
@@ -1844,9 +1854,8 @@ export default function App() {
       const targetWH = pData.age || pData.t2;
 
       if (targetWH) {
-        const matchedOption = validOptions.find(
-          (o) =>
-            o.warehouse.includes(targetWH) || targetWH.includes(o.warehouse),
+        const matchedOption = validOptions.find((o) =>
+          isSameWarehouseName(o.warehouse, targetWH)
         );
         if (matchedOption) {
           bestOption = matchedOption;
@@ -2687,7 +2696,7 @@ export default function App() {
                                           className="flex items-center gap-1 group text-zinc-700 bg-white border border-zinc-200 hover:border-indigo-400 hover:text-indigo-700 px-2 py-0.5 rounded shadow-sm text-xs font-mono transition-all active:scale-95"
                                         >
                                           发货SKU: {result.bestOption.stock.suggestedSku}
-                                          <Copy className="w-3 h-3 text-zinc-400 group-hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                          <Copy className="w-3 h-3 text-zinc-400 group-hover:text-indigo-500 opacity-40 group-hover:opacity-100 transition-opacity" />
                                         </button>
                                       )}
                                       {result.bestOption.stock.total === 0 && (
@@ -2978,7 +2987,7 @@ export default function App() {
                                                 className="flex items-center gap-1 group text-[10px] text-zinc-700 font-bold border border-zinc-200 hover:border-indigo-400 hover:text-indigo-700 px-1.5 py-0.5 rounded-md bg-white shadow-sm leading-none font-mono transition-all active:scale-95"
                                               >
                                                 发货SKU: {opt.stock.suggestedSku}
-                                                <Copy className="w-[10px] h-[10px] text-zinc-400 group-hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <Copy className="w-[10px] h-[10px] text-zinc-400 group-hover:text-indigo-500 opacity-40 group-hover:opacity-100 transition-opacity" />
                                               </button>
                                             )}
                                             {opt.stock.eb === 0 &&
