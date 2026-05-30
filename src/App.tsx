@@ -32,6 +32,7 @@ import {
   Copy,
 } from "lucide-react";
 import * as XLSX from "xlsx";
+import BatchStockQuery from "./components/BatchStockQuery";
 
 // === 全局物流规则配置 (严格模式) ===
 interface CarrierRule {
@@ -2211,6 +2212,12 @@ export default function App() {
                 >
                   <Calculator className="w-4 h-4" /> 超规核算
                 </button>
+                <button
+                  onClick={() => setActiveTab("orders")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === "orders" ? "bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200" : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/50"}`}
+                >
+                  <Layers className="w-4 h-4" /> SKU批量查询
+                </button>
               </div>
               <div className="w-px h-6 bg-zinc-300 mx-2"></div>
               <button
@@ -3646,6 +3653,18 @@ export default function App() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === "orders" && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <BatchStockQuery
+              systemInventoryMap={inventoryMap}
+              onAutoSwitchToQuery={(sku) => {
+                setInputSku(sku);
+                setActiveTab("query");
+              }}
+            />
           </div>
         )}
       </main>
