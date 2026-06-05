@@ -1017,6 +1017,14 @@ export default function App() {
     loadStoredData();
   }, []);
 
+  // 自动在背景底表数据更新时，如果当前正在展示结果，立刻重新刷新分析结果
+  useEffect(() => {
+    if (result && inputSku && inputCountry && csvData && csvData.length > 0) {
+      handleSearch(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inventoryMap, priorityMap, productInfoMap, csvData]);
+
   // --- 数据表严谨解析 ---
   const processTableData = useCallback((parsed: any[][]) => {
     if (!parsed || parsed.length < 3)
@@ -1597,8 +1605,8 @@ export default function App() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (e?: React.FormEvent | null) => {
+    if (e) e.preventDefault();
     if (!csvData) {
       setError("请先上传尾程报价表。");
       return;

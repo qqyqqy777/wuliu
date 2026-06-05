@@ -83,6 +83,10 @@ export default function BatchStockQuery({
     if (files && files.length > 0) {
       processSourceFile(files[0]);
     }
+    // Reset file input so the same file can be uploaded again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   // Helper to load sheets
@@ -409,6 +413,13 @@ export default function BatchStockQuery({
   };
 
   const hasSystemData = Object.keys(systemInventoryMap).length > 0;
+
+  // Automatically re-query if system inventory updates and we are in system mode
+  React.useEffect(() => {
+    if (queryMode === "system" && isSearched && skuInput.trim().length > 0) {
+      handleQuery();
+    }
+  }, [systemInventoryMap]);
 
   return (
     <div className="space-y-6">
