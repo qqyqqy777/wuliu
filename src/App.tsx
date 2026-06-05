@@ -2241,7 +2241,7 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-        {activeTab === "query" && (
+        <div className={activeTab === "query" ? "block" : "hidden"}>
           <div className="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="p-6 sm:p-8">
               <div className="mb-6">
@@ -3126,9 +3126,8 @@ export default function App() {
               )}
             </div>
           </div>
-        )}
-
-        {activeTab === "calc" && (
+        </div>
+        <div className={activeTab === "calc" ? "block" : "hidden"}>
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-zinc-200 gap-4">
               <div className="flex items-center space-x-4">
@@ -3662,9 +3661,8 @@ export default function App() {
               </div>
             </div>
           </div>
-        )}
-
-        {activeTab === "orders" && (
+        </div>
+        <div className={activeTab === "orders" ? "block" : "hidden"}>
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <BatchStockQuery
               systemInventoryMap={inventoryMap}
@@ -3674,7 +3672,7 @@ export default function App() {
               }}
             />
           </div>
-        )}
+        </div>
       </main>
 
       {/* 所有渠道报价弹窗 */}

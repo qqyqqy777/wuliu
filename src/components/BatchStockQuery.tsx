@@ -1,6 +1,7 @@
-import React, { useState, useRef, DragEvent, ChangeEvent } from "react";
+import React, { useState, useRef, DragEvent, ChangeEvent, useEffect } from "react";
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
+import localforage from "localforage";
 import Tesseract from "tesseract.js";
 import {
   Upload,
@@ -52,12 +53,93 @@ export default function BatchStockQuery({
   const [queryResults, setQueryResults] = useState<any[]>([]);
   const [isSearched, setIsSearched] = useState<boolean>(false);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [updateNotification, setUpdateNotification] = useState<string>("");
 
   // Drag Zone State
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Load from localforage on mount
+  useEffect(() => {
+    const loadStoredData = async () => {
+      const storedQueryMode = await localforage.getItem("bsq_queryMode");
+      if (storedQueryMode) setQueryMode(storedQueryMode as any);
+
+      const storedSkuInput = await localforage.getItem("bsq_skuInput");
+      if (storedSkuInput) setSkuInput(storedSkuInput as any);
+
+      const storedMatchingMode = await localforage.getItem("bsq_matchingMode");
+      if (storedMatchingMode) setMatchingMode(storedMatchingMode as any);
+      
+      const storedFileName = await localforage.getItem("bsq_fileName");
+      if (storedFileName) setFileName(storedFileName as any);
+
+      const storedSheetNames = await localforage.getItem("bsq_sheetNames");
+      if (storedSheetNames) setSheetNames(storedSheetNames as any);
+
+      const storedCurrentSheet = await localforage.getItem("bsq_currentSheet");
+      if (storedCurrentSheet) setCurrentSheet(storedCurrentSheet as any);
+
+      const storedCustomData = await localforage.getItem("bsq_customData");
+      if (storedCustomData) {
+        setCustomData(storedCustomData as any);
+        setIsSuccessStatus(true);
+        setFileParseStatus(`成功恢复 ${storedFileName || "文件"} 数据，共 ${(storedCustomData as any).length} 行`);
+      }
+
+      const storedHeaders = await localforage.getItem("bsq_headers");
+      if (storedHeaders) setHeaders(storedHeaders as any);
+
+      const storedSumColumn = await localforage.getItem("bsq_sumColumn");
+      if (storedSumColumn) setSumColumn(storedSumColumn as any);
+
+      const storedSkuColumn = await localforage.getItem("bsq_skuColumn");
+      if (storedSkuColumn) setSkuColumn(storedSkuColumn as any);
+    };
+    loadStoredData();
+  }, []);
+
+  useEffect(() => {
+    if (queryMode === "custom" && isSearched && skuInput.trim().length > 0 && customData && customData.length > 0) {
+      handleQuery();
+      setUpdateNotification("上传表格已更新，并已为您自动更新对应结果！");
+      setTimeout(() => setUpdateNotification(""), 4000);
+    }
+  }, [customData]);
+
+  // Save specific states to localforage when they change
+  useEffect(() => {
+    localforage.setItem("bsq_queryMode", queryMode);
+  }, [queryMode]);
+  useEffect(() => {
+    localforage.setItem("bsq_skuInput", skuInput);
+  }, [skuInput]);
+  useEffect(() => {
+    localforage.setItem("bsq_matchingMode", matchingMode);
+  }, [matchingMode]);
+  useEffect(() => {
+    localforage.setItem("bsq_sumColumn", sumColumn);
+  }, [sumColumn]);
+  useEffect(() => {
+    localforage.setItem("bsq_skuColumn", skuColumn);
+  }, [skuColumn]);
+  useEffect(() => {
+    if (fileName) localforage.setItem("bsq_fileName", fileName);
+  }, [fileName]);
+  useEffect(() => {
+    localforage.setItem("bsq_sheetNames", sheetNames);
+  }, [sheetNames]);
+  useEffect(() => {
+    localforage.setItem("bsq_currentSheet", currentSheet);
+  }, [currentSheet]);
+  useEffect(() => {
+    if (customData.length > 0) localforage.setItem("bsq_customData", customData);
+  }, [customData]);
+  useEffect(() => {
+    if (headers.length > 0) localforage.setItem("bsq_headers", headers);
+  }, [headers]);
 
   // Drag & Drop event handlers
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -125,6 +207,8 @@ export default function BatchStockQuery({
         setFileParseStatus(`成功加载 [${sheetName}] 表，提供共 ${results.length} 行数据`);
         setIsSuccessStatus(true);
         setIsErrorStatus(false);
+        setUpdateNotification("外部本地表格已成功导入并同步！");
+        setTimeout(() => setUpdateNotification(""), 4000);
       } else {
         throw new Error("工作表内容为空");
       }
@@ -187,6 +271,8 @@ export default function BatchStockQuery({
             setSheetNames([]);
             setCurrentSheet("");
             setWorkbook(null);
+            setUpdateNotification("CSV底表已成功导入并同步！");
+            setTimeout(() => setUpdateNotification(""), 4000);
           } else {
             setFileParseStatus("❌ CSV 文件的行内容为空");
             setIsErrorStatus(true);
@@ -409,6 +495,8 @@ export default function BatchStockQuery({
       setQueryResults(results);
       setIsSearched(true);
       setIsSearching(false);
+      setUpdateNotification("查询处理完成，数据展示已更新！");
+      setTimeout(() => setUpdateNotification(""), 3000);
     }, 150);
   };
 
@@ -418,11 +506,23 @@ export default function BatchStockQuery({
   React.useEffect(() => {
     if (queryMode === "system" && isSearched && skuInput.trim().length > 0) {
       handleQuery();
+      setUpdateNotification("系统底表库存已更新，并已自动重新计算查询结果！");
+      setTimeout(() => setUpdateNotification(""), 4000);
     }
   }, [systemInventoryMap]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Toast Notification */}
+      {updateNotification && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border-2 border-emerald-500/30">
+            <CheckCircle2 className="w-5 h-5 text-emerald-100" />
+            <span className="text-sm font-bold tracking-wide">{updateNotification}</span>
+          </div>
+        </div>
+      )}
+
       {/* Tab controls to choose system mapping vs custom sheet mapping */}
       <div className="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-zinc-50/50 border-b border-zinc-100 gap-4">
