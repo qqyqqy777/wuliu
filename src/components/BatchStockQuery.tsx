@@ -103,9 +103,7 @@ export default function BatchStockQuery({
 
   useEffect(() => {
     if (queryMode === "custom" && isSearched && skuInput.trim().length > 0 && customData && customData.length > 0) {
-      handleQuery();
-      setUpdateNotification("上传表格已更新，并已为您自动更新对应结果！");
-      setTimeout(() => setUpdateNotification(""), 4000);
+      handleQuery("上传表格已更新，并已为您自动更新对应结果！");
     }
   }, [customData]);
 
@@ -394,7 +392,7 @@ export default function BatchStockQuery({
   };
 
   // Execute querying
-  const handleQuery = () => {
+  const handleQuery = (customNotification?: string) => {
     const listSkus = skuInput
       .split("\n")
       .map((s) => s.trim())
@@ -495,7 +493,7 @@ export default function BatchStockQuery({
       setQueryResults(results);
       setIsSearched(true);
       setIsSearching(false);
-      setUpdateNotification("查询处理完成，数据展示已更新！");
+      setUpdateNotification(customNotification || "查询处理完成，数据展示已更新！");
       setTimeout(() => setUpdateNotification(""), 3000);
     }, 150);
   };
@@ -505,9 +503,7 @@ export default function BatchStockQuery({
   // Automatically re-query if system inventory updates and we are in system mode
   React.useEffect(() => {
     if (queryMode === "system" && isSearched && skuInput.trim().length > 0) {
-      handleQuery();
-      setUpdateNotification("系统底表库存已更新，并已自动重新计算查询结果！");
-      setTimeout(() => setUpdateNotification(""), 4000);
+      handleQuery("系统底表库存已更新，并已自动重新计算查询结果！");
     }
   }, [systemInventoryMap]);
 
@@ -822,7 +818,7 @@ export default function BatchStockQuery({
                 </div>
 
                 <button
-                  onClick={handleQuery}
+                  onClick={() => handleQuery()}
                   disabled={isSearching || (queryMode === "custom" && customData.length === 0)}
                   className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 px-8 rounded-xl shadow-md cursor-pointer transition-all hover:scale-[1.01] active:scale-95 text-sm ${
                     isSearching || (queryMode === "custom" && customData.length === 0)

@@ -1276,8 +1276,9 @@ export default function App() {
   const processPriorityData = (
     sheetsData: { name: string; data: any[][] }[],
   ) => {
-    const newPriorityMap = { ...priorityMap };
-    const newInvMap = { ...inventoryMap };
+    // When a new file is uploaded, we replace the old data instead of merging.
+    const newPriorityMap: Record<string, any> = {};
+    const newInvMap: Record<string, Record<string, number>> = {};
 
     const parseSheet = (
       parsed: any[][],
@@ -1334,14 +1335,11 @@ export default function App() {
           if (priorityType === "age") {
             if (sku) {
               if (!newInvMap[sku]) newInvMap[sku] = {};
-              newInvMap[sku][wh] = Math.max(newInvMap[sku][wh] || 0, stockNum);
+              newInvMap[sku][wh] = (newInvMap[sku][wh] || 0) + stockNum;
             }
             if (cleanSku) {
               if (!newInvMap[cleanSku]) newInvMap[cleanSku] = {};
-              newInvMap[cleanSku][wh] = Math.max(
-                newInvMap[cleanSku][wh] || 0,
-                stockNum,
-              );
+              newInvMap[cleanSku][wh] = (newInvMap[cleanSku][wh] || 0) + stockNum;
             }
           }
         }
